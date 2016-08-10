@@ -309,6 +309,11 @@ def do_update(cs, args):
            default=None,
            help="Size of the instance disk volume in GB. "
                 "Required when volume support is enabled.")
+@utils.arg('--volume_type',
+           metavar='<volume_type>',
+           type=str,
+           default=None,
+           help="Volume type. Optional when volume support is enabled.")
 @utils.arg('flavor_id',
            metavar='<flavor_id>',
            help='Flavor of the instance.')
@@ -365,7 +370,8 @@ def do_create(cs, args):
     volume = None
     replica_of_instance = None
     if args.size:
-        volume = {"size": args.size}
+        volume = {"size": args.size,
+                  "type": args.volume_type}
     restore_point = None
     if args.backup:
         restore_point = {"backupRef": args.backup}
@@ -413,7 +419,7 @@ def do_create(cs, args):
            metavar='<datastore_version>',
            help='A datastore version name or UUID.')
 @utils.arg('--instance',
-           metavar="<flavor_id=flavor_id,volume=volume>",
+           metavar="<flavor_id=flavor_id,volume=volume, volume_type=type>",
            action='append',
            dest='instances',
            default=[],
@@ -431,6 +437,8 @@ def do_cluster_create(cs, args):
                     instance_info["flavorRef"] = v
                 elif k == "volume":
                     instance_info["volume"] = {"size": v}
+                elif k == "volume_type":
+                    instance_info["volume"]["volume_type"] = v
                 else:
                     instance_info[k] = v
         if not instance_info.get('flavorRef'):
